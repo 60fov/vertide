@@ -76,8 +76,9 @@ export const Item = <T extends string>(props: ItemProps<T>) => {
                 checked={toggleValue === value}
                 readOnly={true} />
             <label
+                data-selected={toggleValue === value}
                 className={cn(
-                    "opacity-25 peer-checked:opacity-90 transition-opacity",
+                    "text-neutral-900/25 peer-checked:text-neutral-900/90 transition-colors cursor-pointer",
                     className
                 )}
                 htmlFor={value}>

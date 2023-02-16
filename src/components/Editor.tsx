@@ -1,7 +1,11 @@
 import { cn } from "@/utils/util";
 import { useEffect, useRef, useState } from "react";
 import HorizontalRtl from "./icons/HorizontalLtr";
+import LetterSpacing from "./icons/LetterSpacing";
+import LineHeight from "./icons/LineHeight";
+import VerticalIndent from "./icons/VerticalIdent";
 import VerticalRtl from "./icons/VerticalRtl";
+import NumberField from "./ui/NumberField";
 import ToggleGroup from "./ui/ToggleGroup";
 
 interface Props {
@@ -10,21 +14,7 @@ interface Props {
 }
 
 /*
-    you lose the inuition of how wide, or in this case
-    how tall the text area is without explicitly displaying it
-    
-    arrow key text navigation on the surface is a bit unitiuitive, but 
-    i believe it is semantically correct
-
-    this is interesting
-    https://developer.mozilla.org/en-US/docs/Web/CSS/text-combine-upright
-
-    this may be helpful
-    https://www.w3.org/International/questions/qa-html-dir
-
-    scrolling horizontally on mac can trigger page changes
-
-    mobile cursor while vertical typing is weird (maybe)
+    TODO: ToggleGroup on state not rendering
 */
 
 type WritingMode = "horizontal-tb" | "vertical-rl" | "vertical-lr" | "sideways-rl" | "sideways-lr"
@@ -37,6 +27,9 @@ export default function Editor(props: Props) {
     const inputRef = useRef<HTMLDivElement>(null)
 
     const [value, setValue] = useState<string>(initialValue || "")
+    const [firstLineIndent, setFirstLineIndent] = useState(0)
+    const [lineHeight, setLineHeight] = useState(100)
+    const [letterSpacing, setLetterSpacing] = useState(0)
 
     useEffect(() => {
         if (inputRef.current) inputRef.current.focus()
@@ -55,13 +48,17 @@ export default function Editor(props: Props) {
             <div
                 ref={inputRef}
                 className={cn(
-                    "h-full bg-neutral-50 p-8 rounded shadow-md shadow-neutral-500/5",
-                    "text-xl font-normal font-sans",
+                    "h-full p-8",
+                    "rounded bg-neutral-50 shadow-md shadow-neutral-500/5",
+                    "text-xl font-normal font-serif",
                     "tracking-tight outline-none overflow-scroll",
                 )}
                 style={{
                     writingMode: dir,
-                    textOrientation: "mixed"
+                    textOrientation: "mixed",
+                    textIndent: `${firstLineIndent}px`,
+                    lineHeight: `${lineHeight}%`,
+                    letterSpacing: `${letterSpacing}px`
                     // textCombineUpright: "all",
                 }}
                 onPaste={(e) => {
@@ -75,6 +72,18 @@ export default function Editor(props: Props) {
             <div className="h-4" />
 
             <div className="flex gap-4 items-center px-2">
+
+                <button
+                    className="px-2 py-1 bg-neutral-200/50 rounded border-neutral-500/5 border hover:bg-neutral-200 active:translate-y-[1.5px] transition-all"
+                    onClick={() => setValue(long_snippet)}>
+                    long text
+                </button>
+                <button
+                    className="px-2 py-1 bg-neutral-200/50 rounded border-neutral-500/5 border hover:bg-neutral-200 active:translate-y-[1.5px] transition-all"
+                    onClick={() => setValue(short_snippet)}>
+                    short text
+                </button>
+                <div className="h-6 w-[1px] bg-black/10" />
                 <ToggleGroup.Base
                     name="direction"
                     prompt="select text direction"
@@ -90,16 +99,22 @@ export default function Editor(props: Props) {
                     </ToggleGroup.Item>
                 </ToggleGroup.Base>
                 <div className="h-6 w-[1px] bg-black/10" />
-                <button
-                    className="px-2 py-1 bg-neutral-200/50 rounded border-neutral-500/5 border hover:bg-neutral-200 active:translate-y-[1.5px] transition-all"
-                    onClick={() => setValue(long_snippet)}>
-                    long text
-                </button>
-                <button
-                    className="px-2 py-1 bg-neutral-200/50 rounded border-neutral-500/5 border hover:bg-neutral-200 active:translate-y-[1.5px] transition-all"
-                    onClick={() => setValue(short_snippet)}>
-                    short text
-                </button>
+                <NumberField
+                    icon={<VerticalIndent />}
+                    className="w-16"
+                    value={firstLineIndent}
+                    setValue={setFirstLineIndent} />
+                <NumberField
+                    icon={<LetterSpacing />}
+                    className="w-16"
+                    value={letterSpacing}
+                    setValue={setLetterSpacing} />
+                <NumberField
+                    icon={<LineHeight />}
+                    className="w-16"
+                    min={0}
+                    value={lineHeight}
+                    setValue={setLineHeight} />
             </div>
         </div>
     )
