@@ -6,3 +6,14 @@
 html, body {
     @apply bg-neutral-100;
 }
+
+/* not sure if these are polyfield but not reason to test if it works */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
