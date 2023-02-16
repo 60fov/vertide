@@ -1,6 +1,5 @@
-import { useDragDelta } from "@/utils/hooks"
 import { cn, maths } from "@/utils/util"
-import React, { type ReactNode, useState, useEffect, PointerEventHandler, useCallback, useRef, } from "react"
+import React, { type ReactNode, useState, useRef } from "react"
 
 interface Props {
     onInput?: (value: number, event: React.FormEvent<HTMLInputElement>) => void
@@ -68,7 +67,10 @@ export default function NumberField(props: Props) {
 
     const onPointerMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
         if (!dragging) return
-        setValue((v) => {
+        
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        setValue((v: number) => {
             const newValue = maths.clamp(v + e.movementX, min ?? -Infinity, max ?? Infinity)
             // console.log(newValue)
             return newValue
