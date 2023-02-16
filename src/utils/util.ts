@@ -18,3 +18,9 @@ export function createCtx<A extends unknown | null>() {
     }
     return [useCtx, ctx.Provider] as const; // 'as const' makes TypeScript infer a tuple
 }
+
+export const maths = {
+    clamp: (a: number, min: number, max: number): number => {
+        return a >= max ? max : a <= min ? min : a
+    }
+}
