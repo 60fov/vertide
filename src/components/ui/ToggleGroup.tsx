@@ -11,7 +11,7 @@ const [useMultiToggleContext, MultiToggleProvider] = createCtx<ToggleGroupContex
 interface Props<T extends string> {
     name: string
     prompt: string
-    value: T
+    value?: T
     setValue: (value: T) => void
     className?: string
     children: ReactElement<ItemProps<T>>[] | ReactElement<ItemProps<T>>
@@ -37,7 +37,7 @@ const Base = <T extends string>(props: Props<T>) => {
             <fieldset
                 onChange={handleChange}
                 className={cn(
-                    "flex gap-2",
+                    "flex gap-1 p-1 rounded-lg bg-neutral-200",
                     className
                 )}>
                 <legend className="absolute [clip:rect(0,0,0,0)]">{prompt}</legend>
@@ -66,7 +66,7 @@ export const Item = <T extends string>(props: ItemProps<T>) => {
     const { name: toggleName, value: toggleValue } = useMultiToggleContext()
 
     return (
-        <div className="relative">
+        <div className={cn("relative flex")}>
             <input
                 className="peer appearance-none absolute"
                 type="radio"
@@ -79,6 +79,7 @@ export const Item = <T extends string>(props: ItemProps<T>) => {
                 data-selected={toggleValue === value}
                 className={cn(
                     "text-neutral-900/25 peer-checked:text-neutral-900/90 transition-colors cursor-pointer",
+                    "p-2 inline-block peer-checked:bg-neutral-50 rounded",
                     className
                 )}
                 htmlFor={value}>

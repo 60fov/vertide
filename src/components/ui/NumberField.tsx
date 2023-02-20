@@ -80,8 +80,8 @@ export default function NumberField(props: Props) {
     return (
         <div
             className={cn(
-                "flex gap-1 items-center p-1 rounded-sm",
-                "outline outline-1 outline-black/5 focus-within:outline-black/50",
+                "flex gap-1 items-center p-2 rounded",
+                "outline outline-1 bg-neutral-200 outline-black/5 focus-within:outline-black/50",
                 className
             )}>
             <div

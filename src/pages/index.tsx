@@ -17,8 +17,8 @@ const Home: NextPage = () => {
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff" />
       </Head>
-      <main className="font-serif p-4 max-h-[400px] md:max-h-[600px] h-screen">
-        <Editor initialValue="안녕 👋, feel free to edit me..." />
+      <main className="h-screen">
+        <Editor />
       </main>
     </>
   );
