@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 export const WritingModeList = ["horizontal-tb", "vertical-rl", "vertical-lr", "sideways-rl", "sideways-lr"] as const
 export type WritingMode = typeof WritingModeList[number]
@@ -17,7 +17,11 @@ interface Props {
     TODO: handle value state correctly
 */
 
-export default function Editor(props: Props) {
+export interface TextareaHandle {
+    setText: (text: string) => void
+}
+
+const Textarea = forwardRef<TextareaHandle, Props>(function Textarea(props, ref) {
     const {
         value: valueProp,
         writingMode,
@@ -28,6 +32,14 @@ export default function Editor(props: Props) {
         className
     } = props;
 
+
+    useImperativeHandle(ref, () => {
+        return {
+            setText: (text: string) => {
+                if (inputRef.current) inputRef.current.innerText = text
+            }
+        }
+    })
     const inputRef = useRef<HTMLDivElement>(null)
 
     const [valueState, setValueState] = useState<string>(initialValue || "")
@@ -50,7 +62,7 @@ export default function Editor(props: Props) {
                 textOrientation: "mixed",
                 textIndent: `${firstLineIndent}px`,
                 lineHeight: `${lineHeight}%`,
-                letterSpacing: `${letterSpacing}px`
+                letterSpacing: `${letterSpacing}em`
                 // textCombineUpright: "all",
             }}
             onPaste={(e) => {
@@ -61,4 +73,6 @@ export default function Editor(props: Props) {
             contentEditable>
         </div>
     )
-}
+})
+
+export default Textarea

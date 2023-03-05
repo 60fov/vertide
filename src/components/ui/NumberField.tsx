@@ -1,80 +1,109 @@
 import { cn, maths } from "@/utils/util"
-import React, { type ReactNode, useState, useRef } from "react"
+import React, { type ReactNode, useState, useRef, useEffect } from "react"
 
 interface Props {
-    onInput?: (value: number, event: React.FormEvent<HTMLInputElement>) => void
+    defaultValue?: number
     value?: number
-    setValue?: (v: number) => void
-    initialValue?: number
+    onValueChange?: (v: number) => void
     min?: number
     max?: number
     step?: number
+    threshold?: number
     icon?: ReactNode
-
-    // disabled?: boolean
     placeholder?: string
-
     className?: string
+}
+
+interface Delta {
+    accum: number
+    threshold: number
 }
 
 export default function NumberField(props: Props) {
     const {
-        onInput: onInputProp,
         value: valueProp,
-        setValue: setValueProp,
-        initialValue,
+        defaultValue: defaultValueProp,
+        onValueChange = () => ({}),
         min,
         max,
-        step,
+        step = 1,
+        threshold = 3,
         icon,
-        // disabled,
         placeholder,
         className
     } = props
 
+
     const dragRef = useRef<HTMLDivElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
+    const deltaRef = useRef<Delta>({ accum: 0, threshold })
 
-    // TODO: calculate initival from min max
-    const [valueState, setValueState] = useState<number>(initialValue ?? 0)
+    const defaultValue = defaultValueProp ?? min ?? 0
+
     const [dragging, setDragging] = useState(false)
-    const value = valueProp ?? valueState
-    const setValue = setValueProp ?? setValueState
+    const [valueState, setValueState] = useState(defaultValue)
 
-    const onInput: React.FormEventHandler<HTMLInputElement> = (e) => {
-        // if (props.disabled) return
-        const v = e.currentTarget.valueAsNumber
-        const newValue = maths.clamp(v, min || -Infinity, max || Infinity)
-        if (onInputProp) onInputProp(newValue, e)
+    useEffect(() => {
+        if (inputRef.current) inputRef.current.value = `${defaultValue}`
+    }, [])
+
+    function setValue(value: number) {
+        if (valueProp !== undefined) {
+            onValueChange(value)
+        } else {
+            setValueState(value)
+        }
+        if (inputRef.current) inputRef.current.value = `${value}`
+    }
+
+    function getInputValue(input: HTMLInputElement) {
+        const v = input.valueAsNumber
+        if (isNaN(v)) {
+            return defaultValue
+        }
+        return maths.clamp(v, min ?? -Infinity, max ?? Infinity)
+    }
+
+    const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+        if (e.key === "Enter") {
+            const newValue = getInputValue(e.currentTarget)
+            setValue(newValue)
+        }
     }
 
     const onBlur: React.FocusEventHandler<HTMLInputElement> = (e) => {
-        const v = e.currentTarget.valueAsNumber
-        if (isNaN(v)) setValue(initialValue || 0)
+        const newValue = getInputValue(e.currentTarget)
+        setValue(newValue)
     }
 
     const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
         if (!dragRef.current) return
         dragRef.current.setPointerCapture(e.pointerId)
         setDragging(true)
-        // dragRef.current.addEventListener("pointermove", onPointerMove)
     }
+
+    // TODO: onPointerUp sometimes doesn't fire not sure why so onLostPointerCapture is a second check
     const onPointerUp: React.PointerEventHandler<HTMLDivElement> = (e) => {
         if (!dragRef.current) return
         dragRef.current.releasePointerCapture(e.pointerId)
         setDragging(false)
-        // dragRef.current.removeEventListener("pointermove", onPointerMove)
+    }
+
+    const onLostPointerCapture: React.PointerEventHandler<HTMLDivElement> = (e) => {
+        if (dragRef.current) dragRef.current.releasePointerCapture(e.pointerId)
+        setDragging(false)
     }
 
     const onPointerMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
         if (!dragging) return
-        
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        setValue((v: number) => {
-            const newValue = maths.clamp(v + e.movementX, min ?? -Infinity, max ?? Infinity)
-            // console.log(newValue)
-            return newValue
-        })
+
+        deltaRef.current.accum += e.movementX
+        const delta = Math.floor(deltaRef.current.accum / deltaRef.current.threshold)
+        deltaRef.current.accum = deltaRef.current.accum % deltaRef.current.threshold
+
+        const value = valueProp ?? valueState
+        const newValue = maths.clamp((value || 0) + delta * step, min ?? -Infinity, max ?? Infinity)
+        setValue(newValue)
     }
 
     return (
@@ -85,24 +114,26 @@ export default function NumberField(props: Props) {
                 className
             )}>
             <div
+                tabIndex={-1}
                 ref={dragRef}
                 onPointerDown={onPointerDown}
                 onPointerUp={onPointerUp}
                 onPointerMove={onPointerMove}
+                onLostPointerCapture={onLostPointerCapture}
                 className={cn(
-                    "cursor-ew-resize"
+                    "cursor-ew-resize",
+                    "outline-none"
                 )}>
                 {icon}
             </div>
             <input
+                ref={inputRef}
                 className={cn(
                     "w-full",
                     "bg-transparent outline-none",
                 )}
                 onBlur={onBlur}
-                onInput={onInput}
-                // onChange={onChange}
-                value={value}
+                onKeyDown={onKeyDown}
                 type="number"
                 placeholder={placeholder} />
         </div>
